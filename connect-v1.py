@@ -30,7 +30,7 @@ def test(bar):
     print(bar.get())
 
 
-def query(collection,key,bar, output):
+def query(collection,bar, output):
     global results
     value = bar.get()
     x = collection.find({"name": "{}".format(value)})
@@ -40,14 +40,18 @@ def query(collection,key,bar, output):
         print("no results found for {}".format(value))
 
     result = results.__getitem__(0)
-    int_keys = len(list(result))
+    keys = list(result)
 
-    print(int_keys)
-    output.config(text='Found {} result(s) with {} key(s)'.format(x.count(), int_keys))
+    output.config(text='Found {} result(s) with {} key(s)'.format(x.count(), len(keys)))
 
-    for i in range(0, int_keys):
-        L = tk.Label(leftframe, text=results[result[i]])
-        L.grid(sticky=tk.EW, row=2, column=i, columnspan=2)
+    for i in range(0, len(keys)):
+        L = tk.Label(leftframe, text=keys[i])
+        L.grid(row=2, column=i, columnspan=1)
+    for i in range(0, x.count()):
+        result = results.__getitem__(i)
+        for e in range(0,len(keys)):
+            L = tk.Label(leftframe, text=result[keys[e]])
+            L.grid(row=3+i, column=e, columnspan=1)
 
 
 
@@ -66,7 +70,7 @@ label.grid(sticky=tk.EW, row=1, column=0, columnspan=2)
 
 entry = tk.Entry(leftframe)
 entry.grid(row=0, column=0)
-qbtnid = tk.Button(leftframe, text='Query', command=partial(query, mycol, "name", entry, label))
+qbtnid = tk.Button(leftframe, text='Query', command=partial(query, mycol, entry, label))
 qbtnid.grid(row=0, column=1)
 
 
@@ -80,13 +84,16 @@ x = mycol.insert_one(mydict)
 print(x.inserted_id)
 
 
-x = mycol.find({"name": "John"})
+
 keys = list(x.__getitem__(0))
 for key in keys:
     print(key)
     print(x.__getitem__(0)["{}".format(key)])
 
-print(list(x.__getitem__(0)))
+
 print(x.count())
 '''
+x = mycol.find({"name": "John"})
+print(x.__getitem__(0))
+
 root.mainloop()
