@@ -54,7 +54,6 @@ def query(collection,bar, output):
             L.grid(row=3+i, column=e, columnspan=1)
 
 
-
 check_con(connection, 5000)
 root = tk.Tk()
 root.title("Small Query Program")
@@ -73,26 +72,6 @@ entry.grid(row=0, column=0)
 qbtnid = tk.Button(leftframe, text='Query', command=partial(query, mycol, entry, label))
 qbtnid.grid(row=0, column=1)
 
-
-
-
-'''
-mydict = { "name": "John", "address": "Highway 37" }
-
-x = mycol.insert_one(mydict)
-
-print(x.inserted_id)
-
-
-
-keys = list(x.__getitem__(0))
-for key in keys:
-    print(key)
-    print(x.__getitem__(0)["{}".format(key)])
-
-
-print(x.count())
-'''
 x = mycol.find({"name": "John"})
 print(x.__getitem__(0))
 
