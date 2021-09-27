@@ -12,60 +12,79 @@ mydb = myclient["test-db"]
 mycol = mydb["test"]
 
 
-def check_con(address, timeout):
-    # ensure connection is started
-
-    # set a 5-second connection timeout
+# Check the connection is active
+def check_con(address, timeout, collection):
+    # Create connection query and set timeout
     client = pymongo.MongoClient(address, serverSelectionTimeoutMS=timeout)
+
     try:
         print(client.server_info())
         print()
         print("connected")
+        q = collection.find({})
+        result = q.__getitem__(0)
+        keys = list(result)
+        return keys
 
     except Exception:
         print("Unable to connect to the server.")
 
-
-def test(bar):
-    print(bar.get())
-
-
+# Cleans up window, removing all widgets that have been added. used to clear and reset window
 def clean_up(library):
-    global widget_ids
+    print("cleaning up")
     for item in library:
+        print("removing {}".format(item))
         item.destroy()
 
+# Popup for editing values in the DB. Triggered by button that is made in draw_read()
+def popup_edit(entryv,library):
+    print("editing")
+
+# //TODO Make this fucking insert data to the DB
 
 def draw_ins(window, library):
     clean_up(library)
-
-
-def draw_read(window, library):
     global widget_ids
-    clean_up(library)
     widget_ids = []
+
+# Draws the window for searching the database. Allowing for editing of the values or browsing
+def draw_read(window, library):
+    clean_up(library)
+    global widget_ids
+    widget_ids = []
+
 
     leftframe = tk.Frame(window)
     leftframe.grid(row=0, column=0, sticky=tk.NSEW)
-    widget_ids.append(leftframe)
+    library.append(leftframe)
 
     label = tk.Label(leftframe, text="")
     label.grid(sticky=tk.EW, row=1, column=0, columnspan=2)
-    widget_ids.append(label)
+    library.append(label)
 
     entry = tk.Entry(leftframe)
     entry.grid(row=0, column=0)
-    widget_ids.append(entry)
+    library.append(entry)
 
     qbtnid = tk.Button(leftframe, text='Query', command=partial(query, mycol, entry, label, leftframe))
     qbtnid.grid(row=0, column=1)
-    widget_ids.append(qbtnid)
+    library.append(qbtnid)
+    widget_ids = library
+    return widget_ids
 
 
+# The magic function that query's the database. All shall quiver in it's power.
+# Required arguments are the collection to read from, the bar to get the search term from, the output label for the result
+# count and the window to put it all in
+# //TODO make this take a query that has been pre formed as a dict data type
+# //TODO This will make the subsequent functions easier to run
+# //TODO Also the .count() is defunct, Need to use the collection.count_documents(filter) function.
 def query(collection,bar, output, window):
     global results, widget_ids
     value = bar.get()
+    # query below
     x = collection.find({"name": "{}".format(value)})
+    # if
     if int(x.count()) > 0:
         results = x
     else:
@@ -78,22 +97,35 @@ def query(collection,bar, output, window):
 
     output.config(text='Found {} result(s) with {} key(s)'.format(x.count(), len(keys)))
 
-    for i in range(0, len(keys)):
-        L = tk.Label(window, text=keys[i])
-        L.grid(row=2, column=i, columnspan=1)
+    for i in range(0, len(keys)+1):
+        try:
+            L = tk.Label(window, text=keys[i])
+            L.grid(row=2, column=i, columnspan=1)
+        except IndexError:
+            L = tk.Label(window, text='Edit')
+            L.grid(row=2, column=i, columnspan=1)
         widget_ids.append(L)
+
     for i in range(0, x.count()):
         result = results.__getitem__(i)
-        for e in range(0,len(keys)):
-            L = tk.Label(window, text=result[keys[e]])
-            L.grid(row=3+i, column=e, columnspan=1)
-            widget_ids.append(L)
+        for e in range(0,len(keys) + 1):
+            try:
+                L = tk.Label(window, text=result[keys[e]])
+                L.grid(row=3+i, column=e, columnspan=1)
+                widget_ids.append(L)
+            except IndexError:
+                b = tk.Button(window, text='Edit', command=partial(popup_edit, i, results))
+                b.grid(row=3+i, column=e, columnspan=1)
+                widget_ids.append(b)
 
 
-check_con(connection, 5000)
+
+keychain = check_con(connection, 5000, mycol)
 root = tk.Tk()
 root.title("Small Query Program")
 root.geometry("400x250")
+
+print(mycol.count_documents({"name": "John"}))
 
 
 
