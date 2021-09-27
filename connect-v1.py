@@ -40,8 +40,8 @@ def clean_up(library):
 def popup_edit(entryv,library):
     print("editing")
 
-# //TODO Make this fucking insert data to the DB
 
+# //TODO Make this fucking insert data to the DB
 def draw_ins(window, library):
     clean_up(library)
     global widget_ids
@@ -53,19 +53,22 @@ def draw_read(window, library):
     global widget_ids
     widget_ids = []
 
-
+    # Make a frame to hold everything
     leftframe = tk.Frame(window)
     leftframe.grid(row=0, column=0, sticky=tk.NSEW)
     library.append(leftframe)
 
+    # Make a label to say the count of results
     label = tk.Label(leftframe, text="")
     label.grid(sticky=tk.EW, row=1, column=0, columnspan=2)
     library.append(label)
 
+    # make a entry bar to put in query text
     entry = tk.Entry(leftframe)
     entry.grid(row=0, column=0)
     library.append(entry)
 
+    # make a button to run the query.
     qbtnid = tk.Button(leftframe, text='Query', command=partial(query, mycol, entry, label, leftframe))
     qbtnid.grid(row=0, column=1)
     library.append(qbtnid)
@@ -92,11 +95,13 @@ def query(collection,bar, output, window):
         output.config(text="no results found for '{}'".format(value))
         return
 
+    # get a list of the keys in the DB //TODO remove this, It should be handed in the function arguments
     result = results.__getitem__(0)
     keys = list(result)
 
     output.config(text='Found {} result(s) with {} key(s)'.format(x.count(), len(keys)))
 
+    # Create table showing results (top title row)
     for i in range(0, len(keys)+1):
         try:
             L = tk.Label(window, text=keys[i])
@@ -106,6 +111,7 @@ def query(collection,bar, output, window):
             L.grid(row=2, column=i, columnspan=1)
         widget_ids.append(L)
 
+    # create tbale showing results (actual results part)
     for i in range(0, x.count()):
         result = results.__getitem__(i)
         for e in range(0,len(keys) + 1):
@@ -119,17 +125,14 @@ def query(collection,bar, output, window):
                 widget_ids.append(b)
 
 
-
+# check connection and get the Keys in the collection
 keychain = check_con(connection, 5000, mycol)
 root = tk.Tk()
 root.title("Small Query Program")
 root.geometry("400x250")
 
-print(mycol.count_documents({"name": "John"}))
 
-
-
-
+# create main window toolbar
 menubar = tk.Menu(root)
 
 filemenu = tk.Menu(root, tearoff=0)
